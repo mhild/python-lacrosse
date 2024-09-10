@@ -1,16 +1,18 @@
 from fastapi import FastAPI, Request, Depends
 from fastapi.staticfiles import StaticFiles
 
-from config import Config
 
 from routers import public
 from routers import api
 
+from jlinterface import Jeelink
+
 app = FastAPI()
 
-config = Config()
-api.router.set_config(config)
-public.router.set_config(config)
+jeelink = Jeelink()
+
+api.router.set_jeelink(jeelink)
+public.router.set_jeelink(jeelink)
 
 app.mount("/static", StaticFiles(directory="data/static"), name="static")
 
