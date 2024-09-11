@@ -16,15 +16,21 @@ JEELINK_DEVICE=os.environ.get("JEELINK_DEVICE", "/dev/ttyUSB0")
 JEELINK_BAUD=os.environ.get("JEELINK_BAUD", 57600)
 
 class Jeelink():
-    def __init__(self):
-        self.jeelink = Jeelink_Worker()  
-        self.config = Config()
-        
+    def __init__(self, _config, callback=None):
+        self.jeelink = Jeelink_Worker(callback)  
+        self.config = _config
         self.config.loadConfig() 
         
         
     def _update_known_sensors(self):
-        _new_ids = self.jeelink.get_sensors().keys() - self.config.get_known_ids()
+        
+        keys_from_jeelink = self.jeelink.get_sensors().keys()
+        keys_in_config = self.config.get_known_ids()
+        
+        ic(keys_from_jeelink)
+        ic(keys_in_config)
+        
+        _new_ids = keys_from_jeelink - keys_in_config
         
         for _id in _new_ids:
             self.config.add_or_update(_id)
@@ -54,7 +60,7 @@ class Jeelink_Worker():
         pass
         
     def scan(self, args, noblock=False):
-        self.lacrosse.register_all(self.scan_callback, user_data=None)
+        #self.lacrosse.register_all(self.scan_callback, user_data=None)
         self.lacrosse.start_scan()
         
         if not noblock:
@@ -65,13 +71,15 @@ class Jeelink_Worker():
         if self.lacrosse is not None:
             self.lacrosse.close()
 
-    def __init__(self):
+    def __init__(self, _callback=None):
 
         self.lacrosse = None
         try:
             self.lacrosse = pylacrosse.LaCrosse(JEELINK_DEVICE, JEELINK_BAUD)
+            if _callback is not None:
+                self.lacrosse.register_all(_callback)
+                
             self.lacrosse.open()
-            
             self.scan(None, noblock=True)
             
             

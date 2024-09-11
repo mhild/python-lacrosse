@@ -5,11 +5,28 @@ from fastapi.staticfiles import StaticFiles
 from routers import public
 from routers import api
 
+from pylacrosse import LaCrosseSensor
 from jlinterface import Jeelink
+from config import Config
+
+import mqtt
+import json
+
+from icecream import ic
 
 app = FastAPI()
+config = Config()
 
-jeelink = Jeelink()
+def handle_jeelink_msg(sensor:LaCrosseSensor, user_data):
+    ic('got jeelink message')
+    ic(sensor.__dict__)
+    id = sensor.__dict__['sensorid']
+    ic(config.get_sensor_name(id))
+    name = config.get_sensor_name(id)
+    if name is not None:
+        mqtt.send_message(name, json.dumps(sensor.__dict__))
+
+jeelink = Jeelink(config, callback=handle_jeelink_msg)
 
 api.router.set_jeelink(jeelink)
 public.router.set_jeelink(jeelink)

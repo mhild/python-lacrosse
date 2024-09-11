@@ -1,0 +1,14 @@
+services:
+ JeelinkMqttBridge:
+    image: jeelinkmqttbridge:latest
+    build: 
+      context: .
+      dockerfile: ./dockerfile
+    restart: always
+    ports:
+      - "8008:8000"
+    volumes:
+      - ./jeelink_devices.pickle:/jeelink_devices.pickle:rw
+    privileged: true
+    env_file:
+      - .env

@@ -19,11 +19,22 @@ function submit_mappings() {
     for(var i=0; i < known_keys.length; i++) {
         console.log(known_keys[i]);
         if(document.getElementById('in_text_'+known_keys[i]).readOnly == false) {
-            payload[known_keys[i]] = document.getElementById('in_text_'+known_keys[i]).value;
+            payload['id'] = known_keys[i];
+            payload['name'] = document.getElementById('in_text_'+known_keys[i]).value;
         } else {
             console.log('--> readonly');
         }
     }
 
     console.log(payload);
+
+    return fetch('/api/v1/sensors', {
+        headers:{
+            'Content-Type':'application/json'
+            },
+        method: 'PUT',
+        body: JSON.stringify(payload)
+    }).then(response => response.json())
+    
+
 }

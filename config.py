@@ -3,6 +3,8 @@ import os
 import pickle
 import json
 
+from icecream import ic
+
 DEVICE_DB_FILE=os.environ.get("JEELINK_DEVICE_DB_FILE", './jeelink_devices.pickle')
 
 
@@ -28,6 +30,13 @@ class Config(object):
         
         return self.config[id]
     
+    def get_sensor_name(self, id):
+        _sensor = self.get_sensor(id)
+        if 'name' in _sensor:
+            return _sensor['name']
+        
+        
+    
     def __str__(self):
         return json.dumps(self.config)
     
@@ -40,7 +49,6 @@ class Config(object):
             self.config = pickle.load(dbfile)
             dbfile.close()
             self.DB_LOCK.release()
-
 
     def storeConfig(self):
         self.DB_LOCK.acquire()
@@ -56,14 +64,15 @@ class Config(object):
         
         if _id not in self.config.keys():
             if _name is not None:
-                raise UnknowmId()
+                raise UnknownId()
             
             self.config[_id] = {}
         
         if _name is not None:
-            for _item in self.config:
-                if _item['name'] == _name:
+            for _id in self.config.keys():
+                if self.config[_id]['name'] == _name:
                     raise NameNotUnique()
 
         
         self.config[_id]['name'] = _name
+        self.storeConfig()
