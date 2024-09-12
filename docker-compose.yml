@@ -5,6 +5,8 @@ services:
       context: .
       dockerfile: ./dockerfile
     restart: always
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
     ports:
       - "8008:8000"
     volumes:
