@@ -1,111 +1,30 @@
-/* Style the form */
-#regForm {
-    background-color: #ffffff;
-    margin: 100px auto;
-    padding: 40px;
-    width: 70%;
-    min-width: 300px;
-  }
-  
-  /* Style the input fields */
-  input {
-    padding: 10px;
-    width: 100%;
-    font-size: 17px;
-    font-family: Raleway;
-    border: 1px solid #aaaaaa;
-  }
-  
-  /* Mark input boxes that gets an error on validation: */
-  input.invalid {
-    background-color: #ffdddd;
-    border-color: #ffdddd;
-
-  }
-
-  select.invalid {
-    background-color: #ffdddd;
-    border-color: #ffdddd;
-  }
-  
-  /* Hide all steps by default: */
-  .tab {
-    border-width: 1px;
-    border-style: solid;
-    border-color: #000000;
-  }
-
-  .tab .head {
-    padding: 1em;
-    font-weight: bolder;
-    border:2px;
-    border-color: #000000;
-    background-color: #727272;
-    color: #ffffff;
-    display: block;
-  }
-
-  .tab.active .head {
-    border:2px;
-    border-color: #000000;
-    background-color: #c10d0d;
-    color: #ffffff;
-    display: block;
-  }
-
-  .tab .body {
-    padding: 1em;
-    display: none;
-    transition: 300ms;
-    -webkit-transition: 300ms;
-    -moz-transition: 300ms;
-    -ms-transition: 300ms;
-    -o-transition: 300ms;
-}
-  .tab.active .body {
-    transition: 300ms;
-    display: block;
-  }
-  
-  /* Make circles that indicate the steps of the form: */
-  .step {
-    height: 15px;
-    width: 15px;
-    margin: 0 2px;
-    background-color: #bbbbbb;
-    border: none;
-    border-radius: 50%;
-    display: inline-block;
-    opacity: 0.5;
-  }
-  
-  /* Mark the active step: */
-  .step.active {
-    opacity: 1;
-  }
-  
-  /* Mark the steps that are finished and valid: */
-  .step.finish {
-    background-color: #04AA6D;
-  }
-
-  input[type="submit"] {
-    background-color: purple;
-    width: 180px;
-    display: block;
-    margin: 0px auto;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 18px;
-    font-family: "Courier New", Courier, monospace;
-    color: white;
-    margin-top: 30px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
+.badge {
+  display: inline-block;
+  padding: 0.25em 0.5em;
+  font-size: 75%;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
 }
 
-input[type="submit"]:hover {
-    background-color: rgb(181, 181, 181);
+.badge1 {
+  position:relative;
+}
+.badge1[data-badge]:after {
+  content:attr(data-badge);
+  position:absolute;
+  top:-15px;
+  right:28px;
+  font-size:.7em;
+  padding:0.1em;
+  background:#0078e7;
+  color:white;
+  min-width:18px;height:18px;
+  text-align:center;
+  line-height:18px;
+  border-radius: 5px;
+  box-shadow:5x 5px 5px #333;
 }

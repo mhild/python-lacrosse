@@ -8,6 +8,51 @@ function clear_keys() {
     known_keys = [];
 }
 
+function calc_relative_date(datetimestring) {
+    var lastseen = Date.parse(datetimestring);
+    var now = Date.now();
+
+    var delta = Math.floor((now - lastseen)/1000);
+
+    if (delta<5) {
+        return('just now');
+    } 
+    else if (delta<60) {
+        return((Math.floor(delta/5))*5 + 's ago');    
+    } 
+    else if(delta<3600) {
+        return(Math.floor(delta/60) + 'm ago');
+    }  
+    else if(delta<(3600*24)) {
+        return(Math.floor(delta/(3600)) + 'h ago');
+    }
+    else if(delta<(3600*24*14)) {
+        return(Math.floor(delta/(3600*24)) + 'd ago');
+    }            
+    return ('gone');
+}
+
+function update_lastseen() {
+    fetch('/api/v1/sensors')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("HTTP error " + response.status);
+        }
+        return response.json();
+    })
+    .then(json => {
+        console.log(json);
+        /*var result = JSON.parse(json);*/
+        //console.log(result);
+        for (const key in json) {
+            document.getElementById("label_"+key).setAttribute('data-badge', calc_relative_date(json[key].lastseen));
+        }
+    })
+    .catch(function () {
+        this.dataError = true;
+    })
+}
+
 function register_key(key) {
     if (!(key in known_keys)) {
         known_keys.push(key);
@@ -35,6 +80,6 @@ function submit_mappings() {
         method: 'PUT',
         body: JSON.stringify(payload)
     }).then(response => response.json())
-    
 
 }
+

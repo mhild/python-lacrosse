@@ -22,7 +22,8 @@ def handle_jeelink_msg(sensor:LaCrosseSensor, user_data):
     ic(sensor.__dict__)
     id = sensor.__dict__['sensorid']
     ic(config.get_sensor_name(id))
-    name = config.get_sensor_name(id)
+    #name = config.get_sensor_name(id)
+    name = config.update_state(sensor)
     if name is not None:
         mqtt.send_message(name, json.dumps(sensor.__dict__))
 

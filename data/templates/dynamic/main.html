@@ -1,5 +1,6 @@
 <html>
 <head>
+    <link rel="stylesheet" href="static/test.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
     <script src="static/dynamicform.js"></script>
 </head>
@@ -15,16 +16,16 @@
             {% for key, cfg in mappings.items() %}
                 <script>register_key("{{key}}");</script>
                 <div class="pure-control-group">
-                    <label for="aligned-name">Id {{key}}</label>
-                    {% if cfg.name is none %}
-                    <input id='in_text_{{key}}' type="text" id="aligned-name" placeholder="name" />
+                    <label id='label_{{key}}' class="badge1" data-badge="" for="aligned-name">Id {{key}}</label>
+                    {% if 'name' not in cfg %}
+                    <input id='in_text_{{key}}' type="text" id="aligned-name" placeholder="unknown" />
                     {% else %}
                     <input id='in_text_{{key}}' type="text" id="aligned-name" placeholder="name" readonly = "readonly" value="{{cfg.name}}"/>
                     <button id='button_{{key}}' type="button" class="pure-button pure-button-primary" onclick="make_editable({{key}})">change</button>                
                     {% endif %}
                 </div>
             {% endfor %}
-
+            <script>var timerId = setInterval(() => {update_lastseen()}, 5000);</script>
             <div class="pure-controls">
                 <button type="submit" class="pure-button pure-button-primary" onclick="submit_mappings()">Submit</button>
             </div>

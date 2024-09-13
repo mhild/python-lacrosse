@@ -4,9 +4,12 @@ import pickle
 import json
 
 from icecream import ic
+from pylacrosse import LaCrosseSensor
+from datetime import datetime
+import pytz
 
 DEVICE_DB_FILE=os.environ.get("JEELINK_DEVICE_DB_FILE", './jeelink_devices.pickle')
-
+TIMEZONE=os.environ.get("TIMEZONE", 'Europe/Berlin')
 
 class NameNotUnique(Exception):
     pass
@@ -35,6 +38,25 @@ class Config(object):
         if 'name' in _sensor:
             return _sensor['name']
         
+    def update_state(self, sensor:LaCrosseSensor):
+        
+        if sensor.sensorid not in self.config.keys():
+            self.config[sensor.sensorid] = {}
+        
+        if sensor.sensorid in self.config.keys():
+            #self.config[sensor.sensorid]['lastseen'] = datetime.now(tz=pytz.timezone(TIMEZONE))
+            self.config[sensor.sensorid]['lastseen'] =f'{datetime.now(tz=pytz.timezone(TIMEZONE)):%Y-%m-%dT%H:%M:%S%z}'
+            #YYYY-MM-DDTHH:mm:ss.sssZ
+            self.config[sensor.sensorid]['battery_low'] = sensor.low_battery
+            self.storeConfig()
+        
+        ic('update state')
+        ic(self.config[sensor.sensorid])
+        
+        if 'name' in self.config[sensor.sensorid]:
+            return self.config[sensor.sensorid]['name']
+        else:
+            return None
         
     
     def __str__(self):
