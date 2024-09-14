@@ -21,7 +21,6 @@ class Jeelink():
         self.config = _config
         self.config.loadConfig() 
         
-        
     def _update_known_sensors(self):
         
         keys_from_jeelink = self.jeelink.get_sensors().keys()

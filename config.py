@@ -6,11 +6,12 @@ import json
 from icecream import ic
 from pylacrosse import LaCrosseSensor
 from datetime import datetime
+from dateutil import parser as dtparser
 import pytz
 
 DEVICE_DB_FILE=os.environ.get("JEELINK_DEVICE_DB_FILE", './jeelink_devices.pickle')
 TIMEZONE=os.environ.get("TIMEZONE", 'Europe/Berlin')
-
+MAX_AGE_IN_S=os.environ.get("MAX_AGE_IN_S", 10800)
 class NameNotUnique(Exception):
     pass
 
@@ -38,8 +39,26 @@ class Config(object):
         if 'name' in _sensor:
             return _sensor['name']
         
+    def remove_orphaned_entries(self):
+        
+        now = datetime.now(tz=pytz.timezone(TIMEZONE))
+        
+        orphaned_sensors = []
+        for id in self.config.keys():
+            lastseen = dtparser.parse(self.config[id]['lastseen'])
+            if (now-lastseen).total_seconds() > MAX_AGE_IN_S:
+                ic('removing orphaned sensor ', id)
+                orphaned_sensors.append(id)
+        
+        if not orphaned_sensors:
+            return
+        
+        for id in orphaned_sensors : del self.config[id]
+        self.storeConfig()
+            
     def update_state(self, sensor:LaCrosseSensor):
         
+        self.remove_orphaned_entries()
         if sensor.sensorid not in self.config.keys():
             self.config[sensor.sensorid] = {}
         

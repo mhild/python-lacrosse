@@ -44,6 +44,11 @@ function update_lastseen() {
         console.log(json);
         /*var result = JSON.parse(json);*/
         //console.log(result);
+        let orphaned_ids = known_keys.filter(x => !Object.keys(json).includes(x));
+        let new_ids = Object.keys(json).filter(x => !known_keys.includes(x));
+        console.log('orphaned ids :' + orphaned_ids);
+        console.log('new ids :' + new_ids);
+
         for (const key in json) {
             document.getElementById("label_"+key).setAttribute('data-badge', calc_relative_date(json[key].lastseen));
         }

@@ -14,6 +14,14 @@ HOSTNAME = os.environ.get("RPI_UID", socket.gethostname())
 
 BROKER_HOST = os.environ.get("MQTT_BROKER_HOST", "127.0.0.1")
 BROKER_PORT = os.environ.get("MQTT_BROKER_PORT", 1883)
+
+try:
+    BROKER_PORT = int(BROKER_PORT)
+except ValueError:
+    ic('Invalid Port specification ', BROKER_PORT)
+    ic('defaulting to 1883')
+    BROKER_PORT = 1883
+    
 BASE_TOPIC = 'jeelink'
 
 
@@ -70,6 +78,7 @@ def send_message(name, message):
 def send(topic, payload, retain=False):
     global client
     if not client.is_connected():
+        ic('connecting to broker:', BROKER_HOST, BROKER_PORT)
         client.connect(BROKER_HOST, BROKER_PORT, 60)  
     result:mqtt.MQTTMessageInfo = client.publish(topic, payload, retain)
     client.loop_start()

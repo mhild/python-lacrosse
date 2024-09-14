@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.12.3
 # Or any preferred Python version.
 ADD app.py .
 ADD mqtt.py .

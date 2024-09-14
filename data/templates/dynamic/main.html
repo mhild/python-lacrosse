@@ -14,8 +14,8 @@
 
             <script>clear_keys();</script>
             {% for key, cfg in mappings.items() %}
-                <script>register_key("{{key}}");</script>
-                <div class="pure-control-group">
+                <div id="div_{{key}}" class="pure-control-group">
+                    <script>register_key("{{key}}");</script>
                     <label id='label_{{key}}' class="badge1" data-badge="" for="aligned-name">Id {{key}}</label>
                     {% if 'name' not in cfg %}
                     <input id='in_text_{{key}}' type="text" id="aligned-name" placeholder="unknown" />
@@ -25,7 +25,7 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            <script>var timerId = setInterval(() => {update_lastseen()}, 5000);</script>
+            <script>update_lastseen();var timerId = setInterval(() => {update_lastseen()}, 5000);</script>
             <div class="pure-controls">
                 <button type="submit" class="pure-button pure-button-primary" onclick="submit_mappings()">Submit</button>
             </div>
