@@ -45,10 +45,13 @@ class Config(object):
         
         orphaned_sensors = []
         for id in self.config.keys():
+            if 'lastseen' not in self.config[id] : continue
             lastseen = dtparser.parse(self.config[id]['lastseen'])
             if (now-lastseen).total_seconds() > MAX_AGE_IN_S:
                 ic('removing orphaned sensor ', id)
                 orphaned_sensors.append(id)
+        
+        ic(orphaned_sensors)
         
         if not orphaned_sensors:
             return
@@ -57,7 +60,6 @@ class Config(object):
         self.storeConfig()
             
     def update_state(self, sensor:LaCrosseSensor):
-        
         self.remove_orphaned_entries()
         if sensor.sensorid not in self.config.keys():
             self.config[sensor.sensorid] = {}
@@ -101,8 +103,14 @@ class Config(object):
     def get_known_ids(self):
         return self.config.keys()
     
+    def delete(self, _id):
+        ic('delete', _id) 
+        del self.config[_id]
+        self.storeConfig()
+         
     def add_or_update(self, _id, _name=None):
         
+        ic(self.config)
         if _id not in self.config.keys():
             if _name is not None:
                 raise UnknownId()
@@ -110,10 +118,13 @@ class Config(object):
             self.config[_id] = {}
         
         if _name is not None:
-            for _id in self.config.keys():
-                if self.config[_id]['name'] == _name:
-                    raise NameNotUnique()
+            for id in self.config.keys():
+                if 'name' in self.config[id].keys():
+                    if self.config[id]['name'] == _name:
+                        raise NameNotUnique()
 
         
         self.config[_id]['name'] = _name
+        self.config[_id]['lastseen'] =f'{datetime.now(tz=pytz.timezone(TIMEZONE)):%Y-%m-%dT%H:%M:%S%z}'
+
         self.storeConfig()

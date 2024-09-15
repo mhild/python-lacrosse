@@ -40,9 +40,11 @@ class Jeelink():
 
     def set_sensor(self, id, name):
         self._update_known_sensors()
-        
         self.config.add_or_update(id, name)
         
+    def delete_sensor(self, _id):
+        self._update_known_sensors()
+        self.config.delete(_id)
         
     def __str__(self):
         self._update_known_sensors()

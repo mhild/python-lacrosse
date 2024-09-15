@@ -13,6 +13,6 @@ services:
       - ./jeelink_devices.pickle:/jeelink_devices.pickle:rw
     privileged: true
     environment:
-      - MQTT_BROKER_HOST=127.0.0.1
+      - MQTT_BROKER_HOST=192.168.1.64
       - MQTT_BROKER_PORT=1883
       

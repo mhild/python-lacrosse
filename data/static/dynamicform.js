@@ -1,6 +1,25 @@
 function make_editable(key) {
     document.getElementById('in_text_'+key).readOnly = false;
-    document.getElementById('button_'+key).remove();
+    document.getElementById('change_'+key).remove();
+}
+
+function delete_entry(key) {
+    var keys = [key];
+    delete_entries(keys);
+}
+function delete_entries(keys) {
+    var payload = JSON.stringify({'ids' : keys});
+    console.log("Delete keys " + payload);
+    return fetch('/api/v1/sensors', {
+        headers:{
+            'Content-Type':'application/json'
+            },
+        method: 'DELETE',
+        body: payload
+    }).then(response => {
+        console.log(response.json());
+        location.reload();
+})
 }
 
 var known_keys = [];
@@ -46,8 +65,10 @@ function update_lastseen() {
         //console.log(result);
         let orphaned_ids = known_keys.filter(x => !Object.keys(json).includes(x));
         let new_ids = Object.keys(json).filter(x => !known_keys.includes(x));
-        console.log('orphaned ids :' + orphaned_ids);
-        console.log('new ids :' + new_ids);
+
+        if (orphaned_ids.length>0 || new_ids.length>0) {
+           //location.reload();
+        }
 
         for (const key in json) {
             document.getElementById("label_"+key).setAttribute('data-badge', calc_relative_date(json[key].lastseen));
@@ -65,18 +86,21 @@ function register_key(key) {
 }
 
 function submit_mappings() {
+    var m = [];
     var payload = {};
     for(var i=0; i < known_keys.length; i++) {
         console.log(known_keys[i]);
-        if(document.getElementById('in_text_'+known_keys[i]).readOnly == false) {
-            payload['id'] = known_keys[i];
-            payload['name'] = document.getElementById('in_text_'+known_keys[i]).value;
+        if(document.getElementById('in_text_'+known_keys[i]).readOnly == false && document.getElementById('in_text_'+known_keys[i]).value != "") {
+            m.push({'id': parseInt(known_keys[i],10), 'name': document.getElementById('in_text_'+known_keys[i]).value})
+            //payload['id'] = known_keys[i];
+            //payload['name'] = document.getElementById('in_text_'+known_keys[i]).value;
         } else {
             console.log('--> readonly');
         }
     }
 
-    console.log(payload);
+    payload = {'mappings' : m};
+    console.log(JSON.stringify(payload));
 
     return fetch('/api/v1/sensors', {
         headers:{
@@ -87,4 +111,3 @@ function submit_mappings() {
     }).then(response => response.json())
 
 }
-

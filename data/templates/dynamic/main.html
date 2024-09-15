@@ -14,17 +14,29 @@
 
             <script>clear_keys();</script>
             {% for key, cfg in mappings.items() %}
+            {% if 'name' in cfg and cfg.name is not none %}
                 <div id="div_{{key}}" class="pure-control-group">
                     <script>register_key("{{key}}");</script>
                     <label id='label_{{key}}' class="badge1" data-badge="" for="aligned-name">Id {{key}}</label>
-                    {% if 'name' not in cfg %}
-                    <input id='in_text_{{key}}' type="text" id="aligned-name" placeholder="unknown" />
-                    {% else %}
                     <input id='in_text_{{key}}' type="text" id="aligned-name" placeholder="name" readonly = "readonly" value="{{cfg.name}}"/>
-                    <button id='button_{{key}}' type="button" class="pure-button pure-button-primary" onclick="make_editable({{key}})">change</button>                
-                    {% endif %}
+                    <button id='change_{{key}}' type="button" class="pure-button pure-button-primary" onclick="make_editable({{key}})">change</button>                
+                    <button id='delete_{{key}}' type="button" class="button-delete pure-button" onclick="delete_entry({{key}})">delete</button>                
                 </div>
+                {% endif %}
             {% endfor %}
+<br />
+        <div class="unassigned"></div>
+            {% for key, cfg in mappings.items() %}
+            {% if 'name' not in cfg or ('name' in cfg and cfg.name is none) %}
+            <div id="div_{{key}}" class="pure-control-group">
+                <script>register_key("{{key}}");</script>
+                <label id='label_{{key}}' class="badge1" data-badge="" for="aligned-name">Id {{key}}</label>
+                <input id='in_text_{{key}}' type="text" id="aligned-name" placeholder="unknown" value=""/>
+                <button id='delete_{{key}}' type="button" class="button-delete pure-button" onclick="delete_entry({{key}})">delete</button>                
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
             <script>update_lastseen();var timerId = setInterval(() => {update_lastseen()}, 5000);</script>
             <div class="pure-controls">
                 <button type="submit" class="pure-button pure-button-primary" onclick="submit_mappings()">Submit</button>
