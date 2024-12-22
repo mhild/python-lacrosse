@@ -11,7 +11,6 @@ import socket
 
 HOSTNAME = os.environ.get("RPI_UID", socket.gethostname())
 
-
 BROKER_HOST = os.environ.get("MQTT_BROKER_HOST", "127.0.0.1")
 BROKER_PORT = os.environ.get("MQTT_BROKER_PORT", 1883)
 
@@ -23,7 +22,7 @@ except ValueError:
     BROKER_PORT = 1883
     
 BASE_TOPIC = 'jeelink'
-
+TELE_TOPIC = f'tele/jeelink_bridge_{HOSTNAME}/LWT'
 
 def get_sensor_cfg(name, type, unit, icon=None, device_class=None):
     cfg = { 
@@ -61,26 +60,14 @@ def send_auto_discovery_messages(name):
         
         topic = f"homeassistant/sensor/{m['type']}_{name}/config"
         send(topic, msg, retain=True)
-        
-    
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, f"jeelink_mqtt_bridge_{HOSTNAME}")
-
-REGISTERED_SENSORS = []
-
-def send_message(name, message):
-    
-    if name not in REGISTERED_SENSORS:
-        send_auto_discovery_messages(name)
-        REGISTERED_SENSORS.append(name)
-    topic = f"{BASE_TOPIC}/{name}/state"
-    send(topic, message)
-    
-def send(topic, payload, retain=False):
+  
+def send(topic, payload, retain=False, qos=0):
     global client
     if not client.is_connected():
         ic('connecting to broker:', BROKER_HOST, BROKER_PORT)
         client.connect(BROKER_HOST, BROKER_PORT, 60)  
-    result:mqtt.MQTTMessageInfo = client.publish(topic, payload, retain)
+        client.publish(TELE_TOPIC, 'Online', qos=0, retain=True)
+    result:mqtt.MQTTMessageInfo = client.publish(topic, payload, qos, retain)
     client.loop_start()
     
 
@@ -91,4 +78,20 @@ def send(topic, payload, retain=False):
 
     else:
         print(f'{datetime.now()} Publish: failed {result}')
+    
+      
+    
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, f"jeelink_mqtt_bridge_{HOSTNAME}")
+client.will_set(TELE_TOPIC, payload="Offline", qos=0, retain=True)
+client.publish(TELE_TOPIC, 'Online', qos=0, retain=True)
+
+REGISTERED_SENSORS = []
+
+def send_message(name, message):
+    
+    if name not in REGISTERED_SENSORS:
+        send_auto_discovery_messages(name)
+        REGISTERED_SENSORS.append(name)
+    topic = f"{BASE_TOPIC}/{name}/state"
+    send(topic, message)
     

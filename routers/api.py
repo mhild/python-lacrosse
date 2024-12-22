@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Response, HTTPException
+from fastapi import APIRouter, Depends, Request, Response, HTTPException, Body
 
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
@@ -8,16 +8,22 @@ from fastapi.templating import Jinja2Templates
 
 from jlinterface import Jeelink_Worker
 
-from typing import Dict
+from typing import Dict, List, NamedTuple
 from pydantic import BaseModel
 
 from icecream import ic
 
-from config import Config
+from config import NameNotUnique, UnknownId
+from jlinterface import Jeelink
+
+import json
 import os
 
 
 class ItemNotFound(Exception):
+    def __init__(self, id):
+        self.id = id
+        super().__init__()
     pass
 class DuplicateName(Exception):
     pass
@@ -39,81 +45,51 @@ def full_stack():
 
 class SensorApiRouter(APIRouter):    
 
-    def __init__(self):
-        
-        self.config = None
-        
-        self.jeelink = Jeelink_Worker()        
+    def __init__(self):        
+        self.jeelink = None        
         super().__init__()
     
-    def set_config(self, _config:Config):
-        self.config = _config
-        self.config.loadConfig()
+    def set_jeelink(self, _jeelink:Jeelink):
+        self.jeelink = _jeelink
     
-    def get_sensors(self, id=None, name=None):
-        _raw = self.jeelink.get_sensors()
-        _sensors = {}
-        for _id in _raw.keys():
-            _sensors[_id] = _raw[_id].__dict__
-            _name = 'unknown'
-            
-            if _id in self.config.config.keys():
-                _name = self.config.config[_id]['name']
-    
-            _sensors[_id]['name'] = _name
-            
-            if name is not None and name == _name:
-                return _sensors[_id]
-                
-        if id is not None:
-            if id in _sensors.keys():
-                return _sensors['id']
-            else:
-                raise ItemNotFound()
-            
-        if name is not None:
-            raise ItemNotFound()
+    def get_sensor(self, id=None):
+        _sensors = self.jeelink.get_sensor(id)
+
+        if id is not None and not _sensors:       
+            raise ItemNotFound(id)
         
         return _sensors
 
-    def register_id(self, id, name):
-        ic(f'register id {id}')
-        if id not in self.config.config.keys():
-            self.config.config[id] = {}
-        ic("registering")
-        self.config.config[id]['name'] = name
-        ic("done")
+    def delete_sensor(self, _id):
+        self.jeelink.delete_sensor(_id)
         
     def set_sensor_mapping(self, id, name):
         
-        ic("set_sensor_mapping")
-        for _id in self.config.config.keys():
-            if _id in self.config.config.keys():
-                if self.config.config[_id]['name'] == name and id != _id:
-                    raise DuplicateName()
+        ic("set_sensor_mapping", id, name)
+        try:
+            self.jeelink.set_sensor(id, name)
+        except UnknownId:
+            raise ItemNotFound(id)
+        except NameNotUnique:
+            raise DuplicateName()
         
-        ic("update")
-        ic(id)
-        ic(router.get_sensors().keys())
-        if id in router.get_sensors().keys():
-            ic("id known")
-            self.register_id(id, name)
-
-            ic(self.config.config.keys())
-            ic("store")
-            self.config.storeConfig()
-            
-        else:
-            raise ItemNotFound()
         
 router = SensorApiRouter()
 
 #class NetLocations(BaseModel):
 #    labels: set[str] = set()
 
-class SensorMapping(BaseModel):
+
+class Ids(BaseModel):
+    ids: list[int]  
+
+class Mapping(BaseModel):
     id: int
     name: str
+
+
+class Mappings(BaseModel):
+    mappings: list[Mapping]
     
 #@router.get("/sensors", response_model=NetLocations, tags=['data'])
 @router.get("/sensors", tags=['data'])
@@ -125,20 +101,22 @@ async def get_sensors(request: Request):
     # if net not in locations.keys():
     #     raise HTTPException(status_code=404, detail="Item not found")
     
-    result = router.get_sensors()
+    result = router.get_sensor()
     ic(result)
     return JSONResponse(content=jsonable_encoder(result))
 
-@router.post("/sensors", tags=['data'])
-async  def set_sensors(data:SensorMapping, tags=["data"]):
+@router.put("/sensors", tags=['data'])
+async  def set_sensors(mappings:Mappings, tags=["data"]):
     ic("### set sensors")
-    ic(data)
-    
+
     try:
-        router.set_sensor_mapping(data.id, data.name)
+        for s in mappings.__dict__['mappings']:
+            data = s.__dict__
+            ic(data)
+            router.set_sensor_mapping(data['id'], data['name'])
     except ItemNotFound as e:
         ic(e)
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail=f"Item {e.id} not found")
     except DuplicateName as e:
         ic(e)
         raise HTTPException(status_code=400, detail="Name already taken")
@@ -150,3 +128,19 @@ async  def set_sensors(data:SensorMapping, tags=["data"]):
     return 'OK'
     
 
+@router.delete("/sensors", tags=['data'])
+async  def delete_sensors(ids:Ids, tags=["data"]):
+    ic("### delete sensors")
+
+    try:
+        for id in ids.__dict__['ids']:
+            router.delete_sensor(id)
+    except ItemNotFound as e:
+        ic(e)
+        raise HTTPException(status_code=404, detail=f"Item {e.id} not found")
+    except Exception as e:
+        ic(e)
+        print(full_stack())
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+    return 'OK'

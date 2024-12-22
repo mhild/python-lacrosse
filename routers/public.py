@@ -2,23 +2,24 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from config import Config
+from config import NameNotUnique, UnknownId
+from jlinterface import Jeelink
 
+from icecream import ic
 #from testform import form
 
 class PublicRouter(APIRouter):    
 
     def __init__(self):
         
-        self.config = None      
+        self.jeelink = None      
         super().__init__()
     
-    def set_config(self, _config:Config):
-        self.config = _config
-        self.config.loadConfig()
+    def set_jeelink(self, _jeelink:Jeelink):
+        self.jeelink = _jeelink
     
-    def get_config(self):
-        return self.config.config
+    def get_sensor(self):
+        return self.jeelink.get_sensor()
 
 router = PublicRouter()
 
@@ -39,4 +40,5 @@ async def webapp_form(request: Request):
 
 @router.get("/", tags=['ui'])
 async def webapp_form(request: Request):
-    return templates.TemplateResponse(request=request, context = {'mappings' : router.get_config()}, name='dynamic/main.html')
+    ic(router.get_sensor())
+    return templates.TemplateResponse(request=request, context = {'mappings' : router.get_sensor()}, name='dynamic/main.html')
