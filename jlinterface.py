@@ -26,8 +26,8 @@ class Jeelink():
         keys_from_jeelink = self.jeelink.get_sensors().keys()
         keys_in_config = self.config.get_known_ids()
         
-        ic(keys_from_jeelink)
-        ic(keys_in_config)
+        #ic(keys_from_jeelink)
+        #ic(keys_in_config)
         
         _new_ids = keys_from_jeelink - keys_in_config
         

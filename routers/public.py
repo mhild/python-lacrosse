@@ -40,5 +40,5 @@ async def webapp_form(request: Request):
 
 @router.get("/", tags=['ui'])
 async def webapp_form(request: Request):
-    ic(router.get_sensor())
+    #ic(router.get_sensor())
     return templates.TemplateResponse(request=request, context = {'mappings' : router.get_sensor()}, name='dynamic/main.html')

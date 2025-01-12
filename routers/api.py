@@ -65,7 +65,7 @@ class SensorApiRouter(APIRouter):
         
     def set_sensor_mapping(self, id, name):
         
-        ic("set_sensor_mapping", id, name)
+        #ic("set_sensor_mapping", id, name)
         try:
             self.jeelink.set_sensor(id, name)
         except UnknownId:
@@ -94,7 +94,7 @@ class Mappings(BaseModel):
 #@router.get("/sensors", response_model=NetLocations, tags=['data'])
 @router.get("/sensors", tags=['data'])
 async def get_sensors(request: Request):
-    ic("### get sensors")
+   #ic("### get sensors")
     # if net is None:
     #     raise HTTPException(status_code=400, detail="parameter net is missing")
     
@@ -102,17 +102,17 @@ async def get_sensors(request: Request):
     #     raise HTTPException(status_code=404, detail="Item not found")
     
     result = router.get_sensor()
-    ic(result)
+    #ic(result)
     return JSONResponse(content=jsonable_encoder(result))
 
 @router.put("/sensors", tags=['data'])
 async  def set_sensors(mappings:Mappings, tags=["data"]):
-    ic("### set sensors")
+    #ic("### set sensors")
 
     try:
         for s in mappings.__dict__['mappings']:
             data = s.__dict__
-            ic(data)
+            #ic(data)
             router.set_sensor_mapping(data['id'], data['name'])
     except ItemNotFound as e:
         ic(e)
@@ -130,7 +130,7 @@ async  def set_sensors(mappings:Mappings, tags=["data"]):
 
 @router.delete("/sensors", tags=['data'])
 async  def delete_sensors(ids:Ids, tags=["data"]):
-    ic("### delete sensors")
+    #ic("### delete sensors")
 
     try:
         for id in ids.__dict__['ids']:
